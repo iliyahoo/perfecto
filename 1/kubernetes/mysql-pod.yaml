@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "mysql"
+  labels:
+    app: php
+spec:
+  containers:
+    - name: mysql
+      image: eu.gcr.io/kubernetes-13/mysql:latest
+      ports:
+        - name: mysql
+          containerPort: 3306

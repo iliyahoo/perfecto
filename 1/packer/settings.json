@@ -1,0 +1,10 @@
+{
+    "account_file": "/home/iliya/.ssh/kubestack-account.json",
+    "project_id": "kubernetes-13",
+    "source_image": "coreos-alpha-1325-0-0-v20170216",
+    "zone": "europe-west1-c",
+    "image_name": "kubestack-1-4-9",
+    "image_description": "CoreOS Kubernetes Base Image",
+    "machine_type": "n1-standard-1",
+    "kube_binaries": "../kubestack-release/kubestack-1.4.9.tar.gz"
+}

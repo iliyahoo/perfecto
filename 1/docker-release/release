@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ -z "${1}" ]; then
+  echo "Error: docker release file required"
+  echo "Usage: $0 docker-version"
+  exit 1
+fi
+
+. ${1}
+
+rm -rf output
+mkdir output
+
+wget -N https://get.docker.com/builds/Linux/x86_64/docker-${DOCKER_VERSION}.tgz
+
+tar -xf docker-${DOCKER_VERSION}.tgz
+cp docker/dockerd output/docker
+chmod +x output/docker
+
+cd output/ && shasum -a 256 * > CHECKSUM
+
+echo "docker ${DOCKER_VERSION}" > VERSION
+
+tar -cvzf docker.tar.gz *
+mv docker.tar.gz ../
+
+cd ../
+rm -rf docker docker-${DOCKER_VERSION}.tgz

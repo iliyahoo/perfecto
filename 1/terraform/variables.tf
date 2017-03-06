@@ -2,16 +2,6 @@ variable "account_file" {
     default = "/etc/kubestack-account.json"
 }
 
-variable "discovery_url" {}
-
-variable "flannel_backend" {
-    default = "vxlan"
-}
-
-variable "flannel_network" {
-    default = "10.10.0.0/16"
-}
-
 variable "image" {
     default = "kubestack-0-17-1-v20150606"
 }
@@ -33,7 +23,7 @@ variable "token_auth_file" {
 }
 
 variable "worker_count" {
-    default = 3
+    default = 1
 }
 
 variable "zone" {

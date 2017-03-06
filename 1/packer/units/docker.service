@@ -1,14 +1,11 @@
 [Unit]
 Description=Docker Application Container Engine
 Documentation=http://docs.docker.io
-Requires=flannel.service
-After=flannel.service
 
 [Service]
-EnvironmentFile=/etc/kubernetes.env
-EnvironmentFile=/run/flannel/subnet.env
+EnvironmentFile=/etc/docker.env
 ExecStartPre=/bin/mount --make-rprivate /
-ExecStart=/opt/bin/docker --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU} $DOCKER_OPTS
+ExecStart=/opt/bin/docker $DOCKER_OPTS
 Restart=on-failure
 RestartSec=5
 

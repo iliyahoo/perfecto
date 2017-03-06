@@ -7,7 +7,7 @@
     "image_name": "{{env `IMAGE_NAME`}}",
     "image_description": "{{env `IMAGE_DESCRIPTION`}}",
     "machine_type": "{{env `MACHINE_TYPE`}}",
-    "kube_binaries": "{{env `KUBE_BINARIES`}}"
+    "docker_binaries": "{{env `DOCKER_BINARIES`}}"
     },
     "builders": [{
         "type": "googlecompute",
@@ -28,14 +28,34 @@
     },
     {
         "type": "file",
-        "source": "{{user `kube_binaries`}}",
-        "destination": "/tmp/kubestack.tar.gz"
+        "source": "{{user `docker_binaries`}}",
+        "destination": "/tmp/docker.tar.gz"
+    },
+    {
+        "type": "file",
+        "source": "../apache",
+        "destination": "~core/apache"
+    },
+    {
+        "type": "file",
+        "source": "../nginx",
+        "destination": "~core/nginx"
+    },
+    {
+        "type": "file",
+        "source": "../mysql/names.sql",
+        "destination": "~core/apache/names.sql"
+    },
+    {
+        "type": "file",
+        "source": "../terraform/docker_starter.sh",
+        "destination": "~core/docker_starter.sh"
     },
     {
         "type": "shell",
         "inline": [
             "sudo mkdir -p /opt/bin",
-            "sudo tar -xvf /tmp/kubestack.tar.gz -C /opt/bin",
+            "sudo tar -xvf /tmp/docker.tar.gz -C /opt/bin",
             "sudo chmod +x -R /opt/bin",
             "sudo chown root:root -R /opt/bin",
             "sudo mv /tmp/units/*.service /etc/systemd/system",

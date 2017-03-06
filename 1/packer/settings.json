@@ -3,8 +3,8 @@
     "project_id": "kubernetes-13",
     "source_image": "coreos-alpha-1325-0-0-v20170216",
     "zone": "europe-west1-c",
-    "image_name": "kubestack-1-4-9",
-    "image_description": "CoreOS Kubernetes Base Image",
-    "machine_type": "n1-standard-1",
-    "kube_binaries": "../kubestack-release/kubestack-1.4.9.tar.gz"
+    "image_name": "docker-1-13-1",
+    "image_description": "CoreOS Docker Base Image",
+    "machine_type": "f1-micro",
+    "docker_binaries": "../docker-release/docker.tar.gz"
 }

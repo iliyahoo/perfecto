@@ -1,50 +1,9 @@
-docker network create php
-
-cd mysql
-docker build -t mysql:5.7.17 .
-docker run -d --name mysql -h mysql -v $PWD/mysql_data_dir:/var/lib/mysql -v $PWD/mysql_logs:/var/log --net php mysql:5.7.17
-docker exec -i mysql mysql -u root -pperfecto < $PWD/names.sql
-
-cd ../apache
-docker build -t php .
-docker run -d -h php --name php -v $PWD/php_root:/var/www/html -v $PWD/php_logs:/var/log -v $PWD/apache2:/etc/apache2 --net php php
-
-# to get ip address of php container:
-# docker network inspect php
-http://172.19.0.3/phpinfo.php
-http://172.19.0.3/names.php
+#############################
 
 # Terraform
 > cd terraform
-
-edit terraform.tfvars file
-# retreive discovery_url
-# specifying a proper size of etcd cluster
-> curl https://discovery.etcd.io/new?size=1
-
 > terraform plan
 > terraform apply
-
-kubectl config set-cluster kubestack --insecure-skip-tls-verify=true --server=https://104.199.18.99:6443
-
-## Register the worker nodes
-# Nodes will be named based on the following convention:
-# ${cluster_name}-kube${count}.c.${project}.internal
-cd ../kubernetes
-cat <<EOF> testing-kube0.c.kubernetes-13.internal.json
-{
-  "kind": "Node",
-  "apiVersion": "v1",
-  "metadata": {
-    "name": "testing-kube0.c.kubernetes-13.internal"
-  },
-  "spec": {
-    "externalID": "testing-kube0.c.kubernetes-13.internal"
-  }
-}
-EOF
-kubectl create -f testing-kube0.c.kubernetes-13.internal.json
-kubectl get node testing-kube0.c.kubernetes-13.internal
 
 # push images to container registry
 docker tag mysql:5.7.17 eu.gcr.io/kubernetes-13/mysql
@@ -53,57 +12,33 @@ docker tag php eu.gcr.io/kubernetes-13/php
 gcloud docker -- push eu.gcr.io/kubernetes-13/php
 
 
-
-#############################
-cat <<EOF> php-deployment.yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: php
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: php
-    spec:
-      containers:
-      - name: php
-        image: eu.gcr.io/kubernetes-13/php:latest
-        ports:
-        - containerPort: 80
+sudo tee /etc/profile.d/google-cloud-sdk.sh > /dev/null <<'EOF'
+#!/bin/sh
+#alias gcloud="(docker images google/cloud-sdk || docker pull google/cloud-sdk) > /dev/null;docker run -t -i --net="host" -v $HOME/.config:/.config -v /var/run/docker.sock:/var/run/doker.sock google/cloud-sdk gcloud"
+alias gcloud="(docker images yanana/google-cloud-sdk-coreos || docker pull yanana/google-cloud-sdk-coreos) > /dev/null ; docker run -it --net="host" -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.config:/.config yanana/google-cloud-sdk-coreos gcloud"
+alias gcutil="(docker images google/cloud-sdk || docker pull google/cloud-sdk) > /dev/null;docker run -t -i --net="host" -v $HOME/.config:/.config google/cloud-sdk gcutil"
+alias gsutil="(docker images google/cloud-sdk || docker pull google/cloud-sdk) > /dev/null;docker run -t -i --net="host" -v $HOME/.config:/.config google/cloud-sdk gsutil"
 EOF
-kubectl create -f php-deployment.yaml
+.  /etc/profile.d/google-cloud-sdk.sh
+
+docker network create php
+
+gcloud docker -- pull eu.gcr.io/kubernetes-13/mysql:latest
+gcloud docker -- pull eu.gcr.io/kubernetes-13/php:latest
+
+docker run -d --name mysql -h mysql -v ~/mysql/mysql_data_dir:/var/lib/mysql -v ~/mysql/mysql_logs:/var/log --net php eu.gcr.io/kubernetes-13/mysql
+docker exec -i mysql mysql -u root -pperfecto < ~core/apache/names.sql
+docker run -d -p 80:80 -h php --name php -v ~/apache/php_root:/var/www/html -v ~/apache/php_logs:/var/log -v ~/apache/apache2:/etc/apache2 --net php eu.gcr.io/kubernetes-13/php
+
+# to get ip address of php container:
+# docker network inspect php
+http://172.19.0.3/phpinfo.php
+http://172.19.0.3/names.php
 
 
-cat <<EOF> mysql-pod.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: "mysql"
-  labels:
-    app: php
-spec:
-  containers:
-    - name: mysql
-      image: eu.gcr.io/kubernetes-13/mysql:latest
-      ports:
-        - name: mysql
-          containerPort: 3306
-EOF
-kubectl create -f mysql-pod.yaml
+#################################################
 
-cat <<EOF> php-service.yaml
-kind: Service
-apiVersion: v1
-metadata:
-  name: "php"
-spec:
-  selector:
-    app: "php"
-  ports:
-    - protocol: "TCP"
-      port: 80
-      targetPort: 80
-EOF
-kubectl create -f php-service.yaml
+docker tag nginx eu.gcr.io/kubernetes-13/nginx
+gcloud docker -- push eu.gcr.io/kubernetes-13/nginx
+
+docker run -d -p 80:80 -h nginx --name nginx --net php -v $PWD/logs:/var/logs -v $PWD/html:/var/www/html -v $PWD/conf:/etc/nginx nginx

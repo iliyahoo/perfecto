@@ -58,7 +58,6 @@ resource "google_compute_instance" "docker" {
             "sudo systemctl enable docker",
             "sudo systemctl start docker",
             "mkdir ~/mysql",
-            "sleep 30",
             "bash ~core/docker_starter.sh"
         ]
         connection {
